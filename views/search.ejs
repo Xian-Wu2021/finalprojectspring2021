@@ -1,0 +1,50 @@
+<%- include("_header") -%>
+
+<h2> Find Customers</h2>
+
+<h4>Total number of records in the database: <%= totRecs %></h4>
+
+
+<!-- Not using bootstrap, just a simple form that you may enhance -->
+<form action="/search" method="POST">
+    <table>
+        <tr>
+            <td><label for="cusId">ID</label>:</td>
+            <td><input type="number" name="cusId" id="cusId" /></td>
+            <td>(equals)</td>
+        </tr>
+        <tr>
+            <td><label for="cusFname">First Name</label>:</td>
+            <td><input type="text" name="cusFname" id="cusFname" /></td>
+            <td>(begins with)</td>
+        </tr>
+        <tr>
+            <td><label for="cusLname">Last Name</label>:</td>
+            <td><input type="text" name="cusLname" id="cusLname" /></td>
+            <td>(begins with)</td>
+        </tr>
+        <tr>
+            <td><label for="cusState">State</label>:</td>
+            <td><input type="text" name="cusState" id="cusState" /></td>
+            <td>(equals)</td>
+        </tr>
+        <tr>
+            <td><label for="cusSalesYTD">Sales YTD</label>:</td>
+            <td><input type="text" name="cusSalesYTD" id="cusSalesYTD" /></td>
+            <td>(greater than or equal to)</td>
+        </tr>
+        <tr>
+            <td><label for="cusSalesPrev">Previous Years Sales</label>:</td>
+            <td><input type="text" name="cusSalesPrev" id="cusSalesPrev" /></td>
+            <td>(greater than or equal to)</td>
+        </tr>
+        <tr>
+            <td span="2">
+                <input type="submit" value="Find" />
+                <input type="reset" value="Reset" />
+            </td>
+        </tr>
+    </table>
+</form>
+
+<%- include("_footer") -%>   
