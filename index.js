@@ -44,3 +44,44 @@ app.get("/search", async (req, res) => {
         totRecs: totRecs.totRecords
     });
 });
+
+app.post("/search", async (req, res) => {
+    // Omitted validation check
+    //  Can get this from the page rather than using another DB call.
+    //  Add it as a hidden form value.
+    const totRecs = await dblib.getTotalRecords();
+    console.log("req,body is", req.body);
+
+    dblib.findCustomers(req.body)
+        .then(result => {
+            console.log("result is", result);
+            res.render("search", {
+                type: "post",
+                totRecs: totRecs.totRecords,
+                result: result,
+                prod: req.body
+            })
+        })
+        .catch(err => {
+            res.render("search", {
+                type: "post",
+                totRecs: totRecs.totRecords,
+                result: `Unexpected Error: ${err.message}`,
+                prod: req.body
+            });
+        });
+});
+
+app.get("/searchajax", async (req, res) => {
+    // Omitted validation check
+    const totRecs = await dblib.getTotalRecords();
+    res.render("searchajax", {
+        totRecs: totRecs.totRecords,
+    });
+});
+app.post("/searchajax", upload.array(), async (req, res) => {
+    dblib.findCustomers(req.body)
+        .then(result => res.send(result))
+        .catch(err => res.send({trans: "Error", result: err.message}));
+
+});

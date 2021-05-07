@@ -5,7 +5,8 @@
 <h4>Total number of records in the database: <%= totRecs %></h4>
 
 <!-- Not using bootstrap, just a simple form that you may enhance -->
-<form action="/search" method="POST">
+<!-- Using AJAX, not form action -->
+<form>
     <table>
         <tr>
             <td><label for="cusId">ID</label>:</td>
@@ -43,7 +44,11 @@
                 <input type="reset" value="Reset" />
             </td>
         </tr>
-    </table>
+    </table>   
 </form>
+
+<div id="output"></div>
+
+<script src="searchajax.js"></script>
 
 <%- include("_footer") -%>   
