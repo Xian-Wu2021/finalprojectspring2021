@@ -81,7 +81,42 @@ app.get("/searchajax", async (req, res) => {
 });
 app.post("/searchajax", upload.array(), async (req, res) => {
     dblib.findCustomers(req.body)
-        .then(result => res.send(result))
+        .then(result => {
+            // console.log("search ajax result:", result);
+            res.send(result)
+        })
         .catch(err => res.send({trans: "Error", result: err.message}));
 
 });
+
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
+
+app.get("/edit/:id", (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM customer WHERE cusId = $1";
+    pool.query(sql, [id], (err, result) => {
+      // if (err) ...
+      res.render("edit", { customer: result.rows[0] });
+    });
+  });
+
+// POST /edit/5
+app.post("/edit/:id", (req, res) => {
+    console.log("tyring to POST edit");
+    const id = req.params.id;
+    
+    const cus = [req.body.ID, req.body.cusFname, req.body.cusLname, req.body.cusState, req.body.cusSalesYTD, req.body.cusSalesPrev];    
+    const sql = "UPDATE customer SET cusFname = $2, cusLname = $3, cusState = $4, cusSalesYTD = $5, cusSalesPrev = $6 WHERE (cusId = $1)";
+    console.log(cus);
+    console.log(sql);
+    pool.query(sql, cus, (err, result) => {
+      // if (err) ...
+      res.redirect("/searchajax");
+    });
+  });

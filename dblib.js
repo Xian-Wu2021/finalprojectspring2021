@@ -54,7 +54,7 @@ const insertCustomer = (customer) => {
 const findCustomers = (customer) => {
     // Will build query based on data provided from the form
     //  Use parameters to avoid sql injection
-
+    // console.log("!!!!!!!!!!!!!trying to find", customer);
     // Declare variables
     var i = 1;
     params = [];
