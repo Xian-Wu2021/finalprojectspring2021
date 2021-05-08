@@ -97,6 +97,7 @@ const pool = new Pool({
     }
 });
 
+// Get /edit
 app.get("/edit/:id", (req, res) => {
     const id = req.params.id;
     const sql = "SELECT * FROM customer WHERE cusId = $1";
@@ -106,7 +107,7 @@ app.get("/edit/:id", (req, res) => {
     });
   });
 
-// POST /edit/5
+// POST /edit
 app.post("/edit/:id", (req, res) => {
     console.log("tyring to POST edit");
     const id = req.params.id;
@@ -120,3 +121,43 @@ app.post("/edit/:id", (req, res) => {
       res.redirect("/searchajax");
     });
   });
+
+// GET /create
+app.get("/create", (req, res) => {
+    res.render("create", { customer: {} });
+  });
+
+// POST /create
+app.post("/create", (req, res) => {
+    const sql = "INSERT INTO customer (cusId, cusFname, cusLname, cusState, cusSalesYTD, cusSalesPrev) VALUES ($1, $2, $3, $4, $5, $6)";
+    const customer = [req.body.ID, req.body.cusFname, req.body.cusLname, req.body.cusState, req.body.cusSalesYTD, req.body.cusSalesPrev];
+    pool.query(sql, customer, (err, result) => {
+      // if (err) ...
+      res.redirect("/searchajax");
+    });
+  });
+
+// GET /delete
+app.get("/delete/:id", (req, res) => {
+    const id = req.params.id;
+    const sql = "SELECT * FROM customer WHERE cusId = $1";
+    pool.query(sql, [id], (err, result) => {
+      // if (err) ...
+      res.render("delete", { customer: result.rows[0] });
+    });
+  });
+
+// POST /delete/
+app.post("/delete/:id", (req, res) => {
+    const id = req.params.id;
+    const sql = "DELETE FROM customer WHERE cusId = $1";
+    pool.query(sql, [id], (err, result) => {
+      // if (err) ...
+      res.redirect("/searchajax");
+    });
+  });
+
+//Get/input
+app.get("/input", (req, res) => {
+    res.render("input");
+ });

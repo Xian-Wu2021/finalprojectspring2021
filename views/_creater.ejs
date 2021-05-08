@@ -1,38 +1,41 @@
 <div class="form-group row">
     <label class="col-form-label col-sm-2" for="ID">ID</label>
     <div class="col-sm-8">
-        <input autofocus readonly class="form-control" name="ID" value="<%= customer.cusid %>"/> 
+        <input autofocus class="form-control" name="ID" required type="number" value="<%= customer.cusid %>"/>
     </div>
+    <td>(Required)</td> 
 </div>
 
 <div class="form-group row">
     <label class="col-form-label col-sm-2" for="cusFname">First Name</label>
     <div class="col-sm-7">
-        <input class="form-control" name="cusFname" required value="<%= customer.cusfname %>" />
+        <input class="form-control" name="cusFname" required type="text" value="<%= customer.cusfname %>" />
     </div>
+    <td>(Required)</td> 
 </div>
+
 <div class="form-group row">
     <label class="col-form-label col-sm-2" for="cusLname">Last Name</label>
     <div class="col-sm-7">
-        <input class="form-control" name="cusLname" value="<%= customer.cuslname %>" />
+        <input class="form-control" name="cusLname" required type="text" value="<%= customer.cuslname %>" />
     </div>
+    <td>(Required)</td> 
 </div>
 <div class="form-group row">
     <label class="col-form-label col-sm-2" for="cusState">State</label>
     <div class="col-sm-7">
-        <input class="form-control" name="cusState" value="<%= customer.cusstate %>" />
+        <input class="form-control" name="cusState" type="text" maxlength="2" value="<%= customer.cusstate %>" />
     </div>
 </div>
 <div class="form-group row">
     <label class="col-form-label col-sm-2" for="cusSalesYTD">Sales YTD</label>
     <div class="col-sm-7">
-        <input class="form-control" name="cusSalesYTD" value="<%= customer.cussalesytd %>" />
+        <input class="form-control" name="cusSalesYTD" type="number" value="<%= customer.cussalesytd %>" />
     </div>
 </div>
 <div class="form-group row">
     <label class="col-form-label col-sm-2" for="cusSalesPrev">Previous Years Sales</label>
     <div class="col-sm-7">
-        <input class="form-control" name="cusSalesPrev" value="<%= customer.cussalesprev %>" />
+        <input class="form-control" name="cusSalesPrev" type="number" value="<%= customer.cussalesprev %>" />
     </div>
 </div>
-

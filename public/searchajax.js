@@ -43,7 +43,7 @@ const displayResults = (result) => {
                     <th>Sales YTD</th>
                     <th>Prev Years Sales</th>
                     <th class="d-print-none">
-                      <a class="btn btn-sm btn-success" href="/Create Customer">Add</a>
+                      <a class="btn btn-sm btn-success" href="/create">Add</a>
                     </th>
                 </tr>
             </thead>
