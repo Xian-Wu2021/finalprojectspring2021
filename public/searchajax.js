@@ -59,7 +59,6 @@ const displayResults = (result) => {
 
 // Handle form submission
 document.querySelector("form").addEventListener("submit", e => {
-    console.log("calling displayResults");
     // Cancel default behavior of sending a synchronous POST request
     e.preventDefault();
     // Create a FormData object, passing the form as a parameter
@@ -68,12 +67,11 @@ document.querySelector("form").addEventListener("submit", e => {
         method: "POST",
         body: formData
     })
-        .then(response => response.json())
-        .then(result => {
-            console.log("the result is:", result);
-            displayResults(result);
-        })
-        .catch(err => {
-            console.error(err.message);
-        });
+    .then(response => response.json())
+    .then(result => {
+        displayResults(result);
+    })
+    .catch(err => {
+        console.error(err.message);
+    });
 });

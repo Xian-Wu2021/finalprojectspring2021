@@ -51,12 +51,70 @@ const insertCustomer = (customer) => {
         });
 };
 
+const createCustomer = (customer) => {
+    sql = "INSERT INTO customer (";
+    let i = 1;
+    params = [];
+
+    // Check data provided and build query as necessary
+    if (customer.cusId !== "") {
+        params.push(parseInt(customer.cusId));
+        sql += `cusId`;
+        i++;
+    };
+    if (customer.cusFname !== "") {
+        params.push(`${customer.cusFname}`);
+        sql += `, cusFname`;
+        i++;
+    };
+    if (customer.cusLname !== "") {
+        params.push(`${customer.cusLname}`);
+        sql += `, cusLname`;
+        i++;
+    };
+    if (customer.cusState !== "") {
+        params.push(`${customer.cusState}`);
+        sql += `, cusState`;
+        i++;
+    };   
+    if (customer.cusSalesYTD !== "") {
+        params.push(parseFloat(customer.cusSalesYTD));
+        sql += `, cusSalesYTD`;
+        i++;
+    };
+    if (customer.cusSalesPrev !== "") {
+        params.push(parseFloat(customer.cusSalesPrev));
+        sql += `, cusSalesPrev`;
+        i++;
+    };
+
+    sql += `) VALUES ($1`;
+    for (let j = 2; j < i; ++j) {
+        sql += `, $${j}`;
+    }
+    sql += `)`;
+    console.log("CREATE sql: " + sql);
+    console.log("CREATE params: " + params);
+
+    return pool.query(sql, params)
+        .then(result => {
+            return { 
+                trans: "success",
+            }
+        })
+        .catch(err => {
+            return {
+                trans: "Error",
+                result: `Error: ${err.message}`
+            }
+        });
+};
+
 const findCustomers = (customer) => {
     // Will build query based on data provided from the form
     //  Use parameters to avoid sql injection
-    // console.log("!!!!!!!!!!!!!trying to find", customer);
     // Declare variables
-    var i = 1;
+    let i = 1;
     params = [];
     sql = "SELECT * FROM customer WHERE true";
 
@@ -67,12 +125,12 @@ const findCustomers = (customer) => {
         i++;
     };
     if (customer.cusFname !== "") {
-        params.push(`${customer.cusFname}%`);
+        params.push(`${customer.cusFname}`);
         sql += ` AND UPPER(cusFname) LIKE UPPER($${i})`;
         i++;
     };
     if (customer.cusLname !== "") {
-        params.push(`${customer.cusLname}%`);
+        params.push(`${customer.cusLname}`);
         sql += ` AND UPPER(cusLname) LIKE UPPER($${i})`;
         i++;
     };
@@ -80,8 +138,7 @@ const findCustomers = (customer) => {
         params.push(`${customer.cusState}`);
         sql += ` AND UPPER(cusState) = UPPER($${i})`;
         i++;
-    };
-   
+    };   
     if (customer.cusSalesYTD !== "") {
         params.push(parseFloat(customer.cusSalesYTD));
         sql += ` AND cusSalesYTD >= $${i}`;
@@ -94,9 +151,6 @@ const findCustomers = (customer) => {
     };
 
     sql += ` ORDER BY cusId`;
-    // for debugging
-     console.log("sql: " + sql);
-     console.log("params: " + params);
 
     return pool.query(sql, params)
         .then(result => {
@@ -115,3 +169,4 @@ const findCustomers = (customer) => {
 module.exports.getTotalRecords = getTotalRecords;
 module.exports.insertCustomer = insertCustomer;
 module.exports.findCustomers = findCustomers;
+module.exports.createCustomer = createCustomer;

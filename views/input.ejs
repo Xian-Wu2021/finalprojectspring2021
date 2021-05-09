@@ -1,6 +1,8 @@
 <%- include("_header") -%>
 
 <h1>Customer Import</h1>
+<h4>Total number of records in the database: <%= totRecs %></h4>
+<h4>Select a file with customers for Database Insert</h4>
 <form>
     <input type="file" name="filename" required><p></p>
     <input type="submit">
@@ -34,6 +36,6 @@
             document.getElementById("message").textContent = `Error: ${err.message}`;
         });
     });
-    </script>
+</script>
 
 <%- include("_footer") -%>

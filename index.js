@@ -36,42 +36,6 @@ app.get("/", (req, res) => {
     res.render("index");
 });
 
-app.get("/search", async (req, res) => {
-    // Omitted validation check
-    const totRecs = await dblib.getTotalRecords();
-    res.render("search", {
-        type: "get",
-        totRecs: totRecs.totRecords
-    });
-});
-
-app.post("/search", async (req, res) => {
-    // Omitted validation check
-    //  Can get this from the page rather than using another DB call.
-    //  Add it as a hidden form value.
-    const totRecs = await dblib.getTotalRecords();
-    console.log("req,body is", req.body);
-
-    dblib.findCustomers(req.body)
-        .then(result => {
-            console.log("result is", result);
-            res.render("search", {
-                type: "post",
-                totRecs: totRecs.totRecords,
-                result: result,
-                prod: req.body
-            })
-        })
-        .catch(err => {
-            res.render("search", {
-                type: "post",
-                totRecs: totRecs.totRecords,
-                result: `Unexpected Error: ${err.message}`,
-                prod: req.body
-            });
-        });
-});
-
 app.get("/searchajax", async (req, res) => {
     // Omitted validation check
     const totRecs = await dblib.getTotalRecords();
@@ -98,8 +62,8 @@ const pool = new Pool({
 });
 
 // Get /edit
-app.get("/edit/:id", (req, res) => {
-    const id = req.params.id;
+app.get("/edit/:cusid", (req, res) => {
+    const id = req.params.cusid;
     const sql = "SELECT * FROM customer WHERE cusId = $1";
     pool.query(sql, [id], (err, result) => {
       // if (err) ...
@@ -128,14 +92,13 @@ app.get("/create", (req, res) => {
   });
 
 // POST /create
-app.post("/create", (req, res) => {
-    const sql = "INSERT INTO customer (cusId, cusFname, cusLname, cusState, cusSalesYTD, cusSalesPrev) VALUES ($1, $2, $3, $4, $5, $6)";
-    const customer = [req.body.ID, req.body.cusFname, req.body.cusLname, req.body.cusState, req.body.cusSalesYTD, req.body.cusSalesPrev];
-    pool.query(sql, customer, (err, result) => {
-      // if (err) ...
-      res.redirect("/searchajax");
-    });
-  });
+app.post("/create", upload.array(), async (req, res) => {
+    dblib.createCustomer(req.body)
+        .then(result => {
+            res.send(result);
+        })
+        .catch(err => res.send({trans: "Error", result: err.message}));
+});
 
 // GET /delete
 app.get("/delete/:id", (req, res) => {
@@ -158,6 +121,11 @@ app.post("/delete/:id", (req, res) => {
   });
 
 //Get/input
-app.get("/input", (req, res) => {
-    res.render("input");
+app.get("/input", async (req, res) => {
+    const totRecs = await dblib.getTotalRecords();
+    res.render("input", {
+        totRecs: totRecs.totRecords,
+    });
  });
+
+ 
