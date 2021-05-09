@@ -128,4 +128,60 @@ app.get("/input", async (req, res) => {
     });
  });
 
- 
+//Post/input
+app.post("/input",  upload.single('filename'), (req, res) => {
+  if(!req.file || Object.keys(req.file).length === 0) {
+      message = "Error: Import file not uploaded";
+      return res.send(message);
+  };
+  //Read file line by line, inserting records
+  const buffer = req.file.buffer; 
+  const lines = buffer.toString().split(/\r?\n/);
+
+  lines.forEach(line => {
+       //console.log(line);
+       customer = line.split(",");
+       //console.log(product);
+       const sql = "INSERT INTO customer(cusId, cusFname, cusLname, cusState, cusSalesYTD, cusSalesPrev) VALUES ($1, $2, $3, $4, $5, $6)";
+       pool.query(sql, customer, (err, result) => {
+           if (err) {
+               console.log(`Insert Error.  Error message: ${err.message}`);
+           } else {
+               console.log(`Inserted successfully`);
+           }
+      });
+  });
+  message = `Processing Complete - Processed ${lines.length} records`;
+  res.send(message);
+}); 
+
+
+//Get/output
+app.get("/output", async (req, res) => {
+  const totRecs = await dblib.getTotalRecords();
+  var message = "";
+  res.render("output",{
+    totRecs: totRecs.totRecords,
+    message: message });
+ });
+
+
+//Post/output
+app.post("/output", (req, res) => {
+  const sql = "SELECT * FROM customer ORDER BY cusId";
+  pool.query(sql, [], (err, result) => {
+      var message = "";
+      if(err) {
+          message = `Error - ${err.message}`;
+          res.render("output", { message: message })
+      } else {
+          var output = "";
+          result.rows.forEach(customer => {
+              output += `${customer.cusid},${customer.cusfname},${customer.cuslname},${customer.cusstate},${customer.cussalesytd},${customer.cussalesprev}\r\n`;
+          });
+          res.header("Content-Type", "text/csv");
+          res.attachment("export.txt");
+          return res.send(output);
+      };
+  });
+}); 
