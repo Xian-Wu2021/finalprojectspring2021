@@ -44,13 +44,11 @@ app.get("/searchajax", async (req, res) => {
     });
 });
 app.post("/searchajax", upload.array(), async (req, res) => {
-    dblib.findCustomers(req.body)
-        .then(result => {
-            // console.log("search ajax result:", result);
-            res.send(result)
-        })
-        .catch(err => res.send({trans: "Error", result: err.message}));
-
+  dblib.findCustomers(req.body)
+    .then(result => {
+        res.send(result)
+    })
+    .catch(err => res.send({trans: "Error", result: err.message}));
 });
 
 const { Pool } = require('pg');
@@ -61,75 +59,91 @@ const pool = new Pool({
     }
 });
 
-// Get /edit
-app.get("/edit/:cusid", (req, res) => {
-    const id = req.params.cusid;
-    const sql = "SELECT * FROM customer WHERE cusId = $1";
-    pool.query(sql, [id], (err, result) => {
-      // if (err) ...
-      res.render("edit", { customer: result.rows[0] });
-    });
-  });
-
-// POST /edit
-app.post("/edit/:id", (req, res) => {
-    console.log("tyring to POST edit");
-    const id = req.params.id;
-    
-    const cus = [req.body.ID, req.body.cusFname, req.body.cusLname, req.body.cusState, req.body.cusSalesYTD, req.body.cusSalesPrev];    
-    const sql = "UPDATE customer SET cusFname = $2, cusLname = $3, cusState = $4, cusSalesYTD = $5, cusSalesPrev = $6 WHERE (cusId = $1)";
-    console.log(cus);
-    console.log(sql);
-    pool.query(sql, cus, (err, result) => {
-      // if (err) ...
-      res.redirect("/searchajax");
-    });
-  });
+function moneyToNumber(money) {
+  if (money == undefined) {
+    return;
+  }
+  let value = money.replace(',', '');
+  value = value.replace(/[^0-9,.]*/, '');
+  value = parseFloat(value);
+  return value;
+};
 
 // GET /create
 app.get("/create", (req, res) => {
-    res.render("create", { customer: {} });
-  });
+  res.render("create", { customer: {} });
+});
 
 // POST /create
 app.post("/create", upload.array(), async (req, res) => {
-    dblib.createCustomer(req.body)
-        .then(result => {
-            res.send(result);
-        })
-        .catch(err => res.send({trans: "Error", result: err.message}));
+  dblib.createCustomer(req.body)
+    .then(result => {
+        res.send(result);
+    })
+    .catch(err => res.send({trans: "Error", result: err.message}));
+});
+
+// Get /edit
+app.get("/edit/:cusid", async (req, res) => {
+  const foundCustomer = await dblib.findCustomers(req.params);
+  if (foundCustomer.result[0] !== undefined) {
+    if (foundCustomer.result[0].cussalesytd !== undefined) {
+      foundCustomer.result[0].cussalesytd = moneyToNumber(foundCustomer.result[0].cussalesytd);
+    }
+    if (foundCustomer.result[0].cussalesprev !== undefined) {
+      foundCustomer.result[0].cussalesprev = moneyToNumber(foundCustomer.result[0].cussalesprev);
+    }
+  }
+  res.render("edit", {
+    customer: foundCustomer.result[0]
+  });
+});
+
+// POST /edit
+app.post("/edit", upload.array(), async (req, res) => {
+  dblib.editCustomer(req.body)
+    .then(result => {
+      res.send(result);
+    })
+    .catch(err => res.send({trans: "Error", result: err.message}));
 });
 
 // GET /delete
-app.get("/delete/:id", (req, res) => {
-    const id = req.params.id;
-    const sql = "SELECT * FROM customer WHERE cusId = $1";
-    pool.query(sql, [id], (err, result) => {
-      // if (err) ...
-      res.render("delete", { customer: result.rows[0] });
-    });
+app.get("/delete/:cusid", async (req, res) => {
+  const foundCustomer = await dblib.findCustomers(req.params);
+  if (foundCustomer.result[0] !== undefined) {
+    if (foundCustomer.result[0].cussalesytd !== undefined) {
+      foundCustomer.result[0].cussalesytd = moneyToNumber(foundCustomer.result[0].cussalesytd);
+    }
+    if (foundCustomer.result[0].cussalesprev !== undefined) {
+      foundCustomer.result[0].cussalesprev = moneyToNumber(foundCustomer.result[0].cussalesprev);
+    }
+  }
+  res.render("delete", {
+    customer: foundCustomer.result[0]
   });
+});
 
 // POST /delete/
-app.post("/delete/:id", (req, res) => {
-    const id = req.params.id;
-    const sql = "DELETE FROM customer WHERE cusId = $1";
-    pool.query(sql, [id], (err, result) => {
-      // if (err) ...
-      res.redirect("/searchajax");
-    });
-  });
+app.post("/delete", upload.array(), async (req, res) => {
+  console.log(req.body);
+  dblib.deleteCustomer(req.body)
+  .then(result => {
+    res.send(result);
+  })
+  .catch(err => res.send({trans: "Error", result: err.message}));
+});
 
 //Get/input
 app.get("/input", async (req, res) => {
-    const totRecs = await dblib.getTotalRecords();
-    res.render("input", {
-        totRecs: totRecs.totRecords,
-    });
- });
+  const totRecs = await dblib.getTotalRecords();
+  res.render("input", {
+      totRecs: totRecs.totRecords,
+  });
+});
 
 //Post/input
-app.post("/input",  upload.single('filename'), (req, res) => {
+app.post("/input", upload.single('filename'), async (req, res) => {
   if(!req.file || Object.keys(req.file).length === 0) {
       message = "Error: Import file not uploaded";
       return res.send(message);
@@ -137,24 +151,58 @@ app.post("/input",  upload.single('filename'), (req, res) => {
   //Read file line by line, inserting records
   const buffer = req.file.buffer; 
   const lines = buffer.toString().split(/\r?\n/);
+  let message = {
+    trans: 'success',
+    msg: ''
+  };
 
-  lines.forEach(line => {
-       //console.log(line);
-       customer = line.split(",");
-       //console.log(product);
-       const sql = "INSERT INTO customer(cusId, cusFname, cusLname, cusState, cusSalesYTD, cusSalesPrev) VALUES ($1, $2, $3, $4, $5, $6)";
-       pool.query(sql, customer, (err, result) => {
-           if (err) {
-               console.log(`Insert Error.  Error message: ${err.message}`);
-           } else {
-               console.log(`Inserted successfully`);
-           }
-      });
-  });
-  message = `Processing Complete - Processed ${lines.length} records`;
+  for (let i = 0; i < lines.length; i++) {
+    line = lines[i];
+    if (line === '') {
+      continue;
+    }
+    customer = line.split(",");
+    const msg = await dblib.insertCustomer(customer);
+    if (msg.trans === 'fail') {
+      message.trans = msg.trans;
+    }
+    if (msg.msg !== undefined && msg.msg !== '') {
+      message.msg += msg.msg + '\n'; //??
+    }
+  }
+  console.log(message);
   res.send(message);
-}); 
+  // console.log(mm);
 
+  // lines.forEach(async line => {
+  //   //console.log(line);
+  //   if (line === '') {
+  //     return;
+  //   }
+  //   customer = line.split(",");
+  //   // console.log(`index customer:`, customer);
+  //   const msg = await dblib.insertCustomer(customer);
+  //     // .then(result => {
+  //     //   message += result.msg + '\n';
+  //     //   mm.push(result.msg);
+  //     //   console.log(mm.length);
+  //     //   res.send(result.msg);
+  //     //   // console.log(message);
+  //     // })
+  //   // console.log(msg);
+  //   mm.push(msg);
+  // });
+  // console.log(mm);
+
+  // setTimeout( function() {console.log(mm);}, 3000);
+  
+  // console.log(`Final`);
+  // console.log(mm);
+
+  // res.send(message);)
+  // message = `Processing Complete - Processed ${lines.length} records`;
+  // res.send(message);
+}); 
 
 //Get/output
 app.get("/output", async (req, res) => {
@@ -163,25 +211,25 @@ app.get("/output", async (req, res) => {
   res.render("output",{
     totRecs: totRecs.totRecords,
     message: message });
- });
-
+});
 
 //Post/output
 app.post("/output", (req, res) => {
-  const sql = "SELECT * FROM customer ORDER BY cusId";
+  const sql = "SELECT * FROM customer ORDER BY cusid";
   pool.query(sql, [], (err, result) => {
-      var message = "";
-      if(err) {
-          message = `Error - ${err.message}`;
-          res.render("output", { message: message })
-      } else {
-          var output = "";
-          result.rows.forEach(customer => {
-              output += `${customer.cusid},${customer.cusfname},${customer.cuslname},${customer.cusstate},${customer.cussalesytd},${customer.cussalesprev}\r\n`;
-          });
-          res.header("Content-Type", "text/csv");
-          res.attachment("export.txt");
-          return res.send(output);
-      };
+    var message = "";
+    if(err) {
+      message = `Error - ${err.message}`;
+      res.render("output", { message: message })
+    } else {
+      var output = "";
+      result.rows.forEach(customer => {
+          output += `${customer.cusid},${customer.cusfname},${customer.cuslname},${customer.cusstate},${moneyToNumber(customer.cussalesytd)},${moneyToNumber(customer.cussalesprev)}\r\n`;
+      });
+      const fileName = req.body.fileName ? req.body.fileName : "export.txt";
+      res.header("Content-Type", "text/csv");
+      res.attachment(fileName);
+      return res.send(output);
+    };
   });
 }); 

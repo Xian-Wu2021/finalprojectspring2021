@@ -1,10 +1,8 @@
 // Function to display results
 const displayResults = (result) => {
-    // console.log("tryign to run displayResults");
     const divElement = document.getElementById("output");
     // Reset output at each call
     divElement.innerHTML = "";
-    // console.log("the result to display: ", result)
     if (result.trans === "Error") {
         divElement.innerHTML += `
         <h2>Application Error</h2><br>
