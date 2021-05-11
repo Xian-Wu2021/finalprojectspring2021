@@ -152,8 +152,10 @@ app.post("/input", upload.single('filename'), async (req, res) => {
   const buffer = req.file.buffer; 
   const lines = buffer.toString().split(/\r?\n/);
   let message = {
-    trans: 'success',
-    msg: ''
+    processed: 0,
+    inserted: 0,
+    notInserted: 0,
+    msg: []
   };
 
   for (let i = 0; i < lines.length; i++) {
@@ -162,16 +164,41 @@ app.post("/input", upload.single('filename'), async (req, res) => {
       continue;
     }
     customer = line.split(",");
-    const msg = await dblib.insertCustomer(customer);
-    if (msg.trans === 'fail') {
-      message.trans = msg.trans;
+    const insertResult = await dblib.insertCustomer(customer);
+    console.log(insertResult);
+    if (insertResult.trans === 'success') {
+      message.processed ++;
+      message.inserted ++;
     }
-    if (msg.msg !== undefined && msg.msg !== '') {
-      message.msg += msg.msg + '\n'; //??
+    if (insertResult.trans === 'fail') {
+      message.processed ++;
+      message.notInserted ++;      
+      if (insertResult.msg !== undefined && insertResult.msg !== '') {
+        message.msg.push(`${insertResult.msg}`); //??
+      }
     }
   }
-  console.log(message);
+  // console.log(message);
+  // console.log("the type of message :", typeof(message));
   res.send(message);
+  // res.send(message.msg.map(word => {
+  //   return (word + "\n\r");
+  // }))
+  
+  
+  
+  
+  
+  
+  
+  
+  // for (let i = 0; i < words.length; i++) {
+  //   const wordssss = words[i];
+  //   res.send(wordssss);
+  // };
+  // res.send(words.map(word => {
+  //   return word;
+  // }));
   // console.log(mm);
 
   // lines.forEach(async line => {

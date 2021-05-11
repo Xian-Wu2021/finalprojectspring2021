@@ -47,7 +47,8 @@ const insertCustomer = (customer) => {
         .catch(err => {
             return {
                 trans: "fail", 
-                msg: `Error on insert of customer id ${params[0]}.  ${err.message}`
+                msg: `Customer ID: ${params[0]} - Error: ${err.message}`
+                // Error on insert of customer id ${params[0]}.  ${err.message}`
             };
         });
 };
